@@ -1,0 +1,1155 @@
+swagger: '2.0'
+info:
+  title: Cachet Status Page API
+  description: A java-friendly swagger documentation file based on the documentation for the Cachet Status Page https://cachethq.io/
+  version: "1.0.0"
+schemes:
+- https
+- http
+securityDefinitions:
+  basicAuth:
+    type: basic
+    description: HTTP Basic Authentication.
+  apiKey:
+    type: apiKey
+    name: Cachet-Token
+    in: header
+security:
+- basicAuth: []
+- apiKey: []
+basePath: /api/v1
+produces:
+- application/json
+paths:
+  /ping:
+    get:
+      operationId: ping
+      summary: Test that the API is responding to your requests.
+      tags:
+      - General
+      responses:
+        200:
+          description: Ping response
+          schema:
+            $ref: '#/definitions/Ping'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+
+  /version:
+    get:
+      operationId: version
+      summary: Get the Cachet version.
+      tags:
+      - General
+      responses:
+        200:
+          description: Version response
+          schema:
+            $ref: '#/definitions/Version'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+
+  /components:
+    get:
+      operationId: getComponents
+      summary: Get all components.
+      parameters:
+      - name: sort
+        in: query
+        description: Object property to filter on.
+        required: false
+        type: string
+        default: id
+      - name: order
+        in: query
+        description: Ordering parameter with options of asc or desc.
+        required: false
+        type: string
+        enum: [ "asc", "desc" ]
+        default: asc
+      - name: per_page
+        in: query
+        type: integer
+        format: int32
+        description: Results per page.
+      - name: page
+        in: query
+        type: integer
+        format: int32
+      - name: id
+        in: query
+        type: integer
+        format: int32
+        description: Unique identifier representing a specific component.
+      - name: name
+        in: query
+        type: string
+        description: Full name or partial name to search for a component.
+      - name: status
+        in: query
+        type: integer
+        format: int32
+        description: Unique status identifier representing a specific component status.
+      - name: group_id
+        in: query
+        type: integer
+        format: int32
+        description: Unique group identifier representing a specific component group.
+      - name: enabled
+        in: query
+        type: boolean
+        format: int
+      tags:
+      - Components
+      responses:
+        200:
+          description: Components response
+          schema:
+            $ref: '#/definitions/ListComponentsResponse'
+        default:
+          description: Unexpected error
+          schema:
+            $ref: '#/definitions/Error'
+    post:
+      operationId: createComponent
+      summary: Create a new component.
+      security:
+      - apiKey: []
+      parameters:
+      - name: body
+        in: body
+        required: true
+        description: Component to be created.
+        schema:
+          $ref: '#/definitions/Component'
+      tags:
+      - Components
+      responses:
+        200:
+          description: Create component response
+          schema:
+            $ref: '#/definitions/SingleComponentResponse'
+
+  /components/{component}:
+    get:
+      operationId: getComponentById
+      summary: Get a component.
+      parameters:
+      - name: component
+        in: path
+        required: true
+        description: Unique component identifier.
+        type: integer
+        format: int32
+      tags:
+      - Components
+      responses:
+        200:
+          description: Component response
+          schema:
+            $ref: '#/definitions/SingleComponentResponse'
+    put:
+      operationId: updateComponentById
+      summary: Update a component.
+      parameters:
+      - name: component
+        in: path
+        required: true
+        description: Unique component identifier.
+        type: integer
+        format: int32
+      - name: body
+        in: body
+        required: true
+        description: Component data to be updated
+        schema:
+          $ref: '#/definitions/Component'
+      tags:
+      - Components
+      responses:
+        200:
+          description: Update component response
+          schema:
+            $ref: '#/definitions/SingleComponentResponse'
+    delete:
+      operationId: deleteComponentById
+      summary: Delete a component.
+      parameters:
+      - name: component
+        in: path
+        required: true
+        description: Unique component identifier.
+        type: integer
+        format: int32
+      tags:
+      - Components
+      responses:
+        200:
+          description: Delete component response
+          schema:
+            type: string
+
+  /components/groups:
+    get:
+      operationId: getComponentGroups
+      summary: Get all Component Groups.
+      parameters:
+      - name: id
+        in: query
+        required: false
+        description: Unique component group id
+        type: integer
+        format: int32
+      - name: name
+        in: query
+        required: false
+        description: Full or partial component group name
+        type: string
+      - name: collapsed
+        in: query
+        description: Group collapsed or not.
+        required: false
+        type: number
+        format: boolean
+      - name: sort
+        in: query
+        description: Object property to filter on.
+        required: false
+        type: string
+        default: id
+      - name: order
+        in: query
+        description: Ordering parameter with options of asc or desc.
+        required: false
+        type: string
+        enum: [ "asc", "desc" ]
+        default: asc
+      - name: per_page
+        in: query
+        type: integer
+        format: int32
+        description: Results per page.
+      - name: page
+        in: query
+        type: integer
+        format: int32
+      tags:
+      - Component Groups
+      responses:
+        200:
+          description: Get component groups response
+          schema:
+            $ref: '#/definitions/ListComponentGroupsResponse'
+    post:
+      operationId: createComponentGroup
+      summary: Create a new Component Group.
+      parameters:
+      - name: body
+        in: body
+        required: true
+        description: Component Group to be created.
+        schema:
+          $ref: '#/definitions/ComponentGroup'
+      tags:
+      - Component Groups
+      responses:
+        200:
+          description: Create component group response
+          schema:
+            $ref: '#/definitions/SingleComponentGroupResponse'
+
+  /components/groups/{group}:
+    get:
+      operationId: getComponentGroupById
+      summary: Get a Component Group.
+      parameters:
+      - name: group
+        in: path
+        required: true
+        description: Unique component group id
+        type: integer
+        format: int32
+      tags:
+      - Component Groups
+      responses:
+        200:
+          description: Get a component group
+          schema:
+            $ref: '#/definition/SingleComponentGroupResponse'
+    put:
+      operationId: updateComponentGroupById
+      summary: Update a Component Group.
+      parameters:
+      - name: group
+        in: path
+        required: true
+        description: Unique component group id
+        type: integer
+        format: int32
+      - name: body
+        in: body
+        required: true
+        description: Component Group data to be updated
+        schema:
+          $ref: '#/definitions/ComponentGroup'
+      tags:
+      - Component Groups
+      responses:
+        200:
+          description: Update component group response
+          schema:
+            $ref: '#/definitions/SingleComponentGroupResponse'
+    delete:
+      operationId: deleteComponentGroupById
+      summary: Delete a Component Group.
+      parameters:
+      - name: group
+        in: path
+        required: true
+        description: Unique component group id
+        type: integer
+        format: int32
+      tags:
+      - Component Groups
+      responses:
+        200:
+          description: Delete component group response
+          schema:
+            type: string
+
+  /incidents:
+    get:
+      operationId: getIncidents
+      summary: Get all incidents.
+      parameters:
+      - name: id
+        in: query
+        required: false
+        description: Unique incident id
+        type: integer
+        format: int32
+      - name: component_id
+        in: query
+        required: false
+        description: Unique component group id
+        type: integer
+        format: int32
+      - name: name
+        in: query
+        required: false
+        description: Full or partial component group name
+        type: string
+      - name: status
+        in: query
+        type: integer
+        format: int32
+      - name: visible
+        in: query
+        type: number
+        format: boolean
+      - name: sort
+        in: query
+        description: Object property to filter on.
+        required: false
+        type: string
+        default: id
+      - name: order
+        in: query
+        description: Ordering parameter with options of asc or desc.
+        required: false
+        type: string
+        enum: [ "asc", "desc" ]
+        default: asc
+      - name: per_page
+        in: query
+        type: integer
+        format: int32
+        description: Results per page.
+      - name: page
+        in: query
+        type: integer
+        format: int32
+      tags:
+      - Incidents
+      responses:
+        200:
+          description: Get incidents response
+          schema:
+            $ref: '#/definitions/ListIncidentsResponse'
+    post:
+      operationId: createIncident
+      summary: Create a new incident.
+      parameters:
+      - name: body
+        in: body
+        required: true
+        description: Incident to be created
+        schema:
+          $ref: '#/definitions/Incident'
+      tags:
+      - Incidents
+      responses:
+        200:
+          description: Incident created response
+          schema:
+            $ref: '#/definitions/SingleIncidentResponse'
+
+  /incidents/{incident}:
+    get:
+      operationId: getIncidentById
+      summary: Get an incident
+      parameters:
+      - name: incident
+        in: path
+        required: true
+        description: Unique incident id
+        type: integer
+        format: int32
+      tags:
+      - Incidents
+      responses:
+        200:
+          description: Get incident response
+          schema:
+            $ref: '#/definitions/SingleIncidentResponse'
+    put:
+      operationId: updateIncidentById
+      summary: Update an incident
+      parameters:
+      - name: incident
+        in: path
+        required: true
+        description: Unique incident id
+        type: integer
+        format: int32
+      - name: body
+        in: body
+        required: true
+        description: Incident data to be updated
+        schema:
+          $ref: '#/definitions/Incident'
+      tags:
+      - Incidents
+      responses:
+        200:
+          description: Update incident response
+          schema:
+            $ref: '#/definitions/SingleIncidentResponse'
+    delete:
+      operationId: deleteIncidentById
+      summary: Delete an incident
+      parameters:
+      - name: incident
+        in: path
+        required: true
+        description: Unique incident id
+        type: integer
+        format: int32
+      tags:
+      - Incidents
+      responses:
+        200:
+          description: Delete incident response
+          schema:
+            type: string
+
+  /incidents/{incident}/updates:
+    get:
+      operationId: getIncidentUpdatesById
+      summary: Get incident updates
+      parameters:
+      - name: incident
+        in: path
+        required: true
+        description: Unique incident id
+        type: integer
+        format: int32
+      - name: sort
+        in: query
+        description: Object property to filter on.
+        required: false
+        type: string
+        default: id
+      - name: order
+        in: query
+        description: Ordering parameter with options of asc or desc.
+        required: false
+        type: string
+        enum: [ "asc", "desc" ]
+        default: asc
+      - name: per_page
+        in: query
+        type: integer
+        format: int32
+        description: Results per page.
+      - name: page
+        in: query
+        type: integer
+        format: int32
+      tags:
+      - Incidents
+      responses:
+        200:
+          description: Get incident updates response
+          schema:
+            $ref: '#/definitions/ListIncidentUpdatesResponse'
+
+  /incidents/{incident}/updates/{update}:
+    get:
+      operationId: getIncidentUpdateById
+      summary: Get an incident update
+      parameters:
+      - name: incident
+        in: path
+        required: true
+        description: Unique incident id
+        type: integer
+        format: int32
+      - name: update
+        in: path
+        required: true
+        description: Unique incident update id
+        type: integer
+        format: int32
+      responses:
+        200:
+          description: Get incident update response
+          schema:
+            $ref: '#/definitions/SingleIncidentUpdateResponse'
+
+  /metrics:
+    get:
+      operationId: getMetrics
+      summary: Get all metrics
+      parameters:
+      - name: sort
+        in: query
+        description: Object property to filter on.
+        required: false
+        type: string
+        default: id
+      - name: order
+        in: query
+        description: Ordering parameter with options of asc or desc.
+        required: false
+        type: string
+        enum: [ "asc", "desc" ]
+        default: asc
+      - name: per_page
+        in: query
+        type: integer
+        format: int32
+        description: Results per page.
+      - name: page
+        in: query
+        type: integer
+        format: int32
+      tags:
+      - Metrics
+      responses:
+        200:
+          description: Get metrics response
+          schema:
+            $ref: '#/definitions/ListMetricsResponse'
+    post:
+      operationId: createMetric
+      summary: Create a metric
+      parameters:
+      - name: body
+        in: body
+        required: true
+        description: Create metric data
+        schema:
+          $ref: '#/definitions/Metric'
+      tags:
+      - Metrics
+      responses:
+        200:
+          description: Create metric response
+          schema:
+            $ref: '#/definitions/SingleMetricResponse'
+
+  /metrics/{metric}:
+    get:
+      operationId: getMetricById
+      summary: Get a metric
+      parameters:
+      - name: metric
+        in: path
+        required: true
+        description: Unique metric id
+        type: integer
+        format: int32
+      tags:
+      - Metrics
+      responses:
+        200:
+          description: Get metric response
+          schema:
+            $ref: '#/definitions/SingleMetricResponse'
+    delete:
+      operationId: deleteMetricById
+      summary: Delete a metric
+      parameters:
+      - name: metric
+        in: path
+        required: true
+        description: Unique metric id
+        type: integer
+        format: int32
+      tags:
+      - Metrics
+      responses:
+        200:
+          description: Delete metric response
+          schema:
+            type: string
+
+  /metrics/{metric}/points:
+    get:
+      operationId: getMetricPointsById
+      summary: Get points for a metric
+      parameters:
+      - name: metric
+        in: path
+        required: true
+        description: Unique metric id
+        type: integer
+        format: int32
+      - name: sort
+        in: query
+        description: Object property to filter on.
+        required: false
+        type: string
+        default: id
+      - name: order
+        in: query
+        description: Ordering parameter with options of asc or desc.
+        required: false
+        type: string
+        enum: [ "asc", "desc" ]
+        default: asc
+      - name: per_page
+        in: query
+        type: integer
+        format: int32
+        description: Results per page.
+      - name: page
+        in: query
+        type: integer
+        format: int32
+      tags:
+      - Metrics
+      responses:
+        200:
+          description: Get metric points response
+          schema:
+            $ref: '#/definitions/ListMetricPointsResponse'
+    post:
+      operationId: createMetricPointById
+      summary: Create point for a metric
+      parameters:
+      - name: metric
+        in: path
+        required: true
+        description: Unique metric id
+        type: integer
+        format: int32
+      - name: body
+        in: body
+        required: true
+        description: Metric data
+        schema:
+          $ref: '#/definitions/MetricPoint'
+      tags:
+      - Metrics
+      responses:
+        200:
+          description: Create metric point response
+          schema:
+            $ref: '#/definitions/SingleMetricPointResponse'
+
+  /metrics/{metric}/points/{point}:
+    delete:
+      operationId: deleteMetricPointById
+      summary: Delete a metric point
+      parameters:
+      - name: metric
+        in: path
+        required: true
+        description: Unique metric id
+        type: integer
+        format: int32
+      - name: point
+        in: path
+        required: true
+        description: Unique metric point id
+        type: integer
+        format: int32
+      tags:
+      - Metrics
+      responses:
+        200:
+          description: Delete metric point response
+          schema:
+            type: string
+
+definitions:
+
+  ListComponentsResponse:
+    type: object
+    properties:
+      meta:
+        $ref: '#/definitions/MetaData'
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/ComponentResponse'
+
+  SingleComponentResponse:
+    type: object
+    properties:
+      data:
+        $ref: '#/definitions/ComponentResponse'
+
+  ComponentResponse:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int32
+      name:
+        type: string
+      description:
+        type: string
+      link:
+        type: string
+      status:
+        type: integer
+        format: int32
+      order:
+        type: integer
+        format: int32
+      group_id:
+        type: integer
+        format: int32
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+      deleted_at:
+        type: string
+        format: date-time
+      status_name:
+        type: string
+      tags:
+        $ref: '#/definitions/Tag'
+
+  Component:
+    type: object
+    properties:
+      name:
+        type: string
+      description:
+        type: string
+      link:
+        type: string
+      status:
+        type: integer
+        format: int32
+      order:
+        type: integer
+        format: int32
+      group_id:
+        type: integer
+        format: int32
+      enabled:
+        type: boolean
+
+  ListComponentGroupsResponse:
+    type: object
+    properties:
+      meta:
+        $ref: '#/definitions/MetaData'
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/ComponentGroupResponse'
+
+  SingleComponentGroupResponse:
+    type: object
+    properties:
+      data:
+        $ref: '#/definitions/ComponentGroupResponse'
+
+  ComponentGroupResponse:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int32
+      name:
+        type: string
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+      order:
+        type: integer
+        format: int32
+      collapsed:
+        type: number
+        format: boolean
+      visible:
+        type: number
+        format: boolean
+      enabled_components:
+        type: array
+        items:
+          $ref: '#/definitions/ComponentResponse'
+      enabled_components_lowest:
+        type: array
+        items:
+          $ref: '#/definitions/ComponentResponse'
+
+  ComponentGroup:
+    type: object
+    properties:
+      name:
+        type: string
+      order:
+        type: integer
+        format: int32
+      collapsed:
+        type: integer
+        format: int32
+
+  ListIncidentsResponse:
+    type: object
+    properties:
+      meta:
+        $ref: '#/definitions/MetaData'
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/IncidentResponse'
+
+  SingleIncidentResponse:
+    type: object
+    properties:
+      data:
+        $ref: '#/definitions/IncidentResponse'
+
+  IncidentResponse:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int32
+      component_id:
+        type: integer
+        format: int32
+      name:
+        type: string
+      status:
+        type: integer
+        format: int32
+      visible:
+        type: integer
+        format: int32
+      message:
+        type: string
+      scheduled_at:
+        type: string
+        format: date-time
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+      deleted_at:
+        type: string
+        format: date-time
+      human_status:
+        type: string
+
+  Incident:
+    type: object
+    properties:
+      name:
+        type: string
+      message:
+        type: string
+      status:
+        type: integer
+        format: int32
+      visible:
+        type: integer
+        format: int32
+      component_id:
+        type: integer
+        format: int32
+      component_status:
+        type: integer
+        format: int32
+      notify:
+        type: number
+        format: boolean
+      created_at:
+        type: string
+        format: date-time
+      template:
+        type: string
+      vars:
+        type: object
+
+  IncidentUpdateResponse:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int32
+      incident_id:
+        type: integer
+        format: int32
+      status:
+        type: integer
+        format: int32
+      message:
+        type: string
+      user_id:
+        type: integer
+        format: int32
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+      human_status:
+        type: string
+      permalink:
+        type: string
+        format: url
+
+  ListIncidentUpdatesResponse:
+    type: object
+    properties:
+      meta:
+        $ref: '#/definitions/MetaData'
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/IncidentUpdateResponse'
+
+  SingleIncidentUpdateResponsee:
+    type: object
+    properties:
+      data:
+        $ref: '#/definitions/IncidentUpdateResponse'
+
+  ListMetricsResponse:
+    type: object
+    properties:
+      meta:
+        $ref: '#/definitions/MetaData'
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/MetricsResponse'
+
+  SingleMetricResponse:
+    type: object
+    properties:
+      data:
+        $ref: '#/definitions/MetricsResponse'
+
+  MetricsResponse:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int32
+      name:
+        type: string
+      suffix:
+        type: string
+      description:
+        type: string
+      default_value:
+        type: number
+        format: float
+      calc_type:
+        type: integer
+        format: int32
+      display_chart:
+        type: boolean
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+      places:
+        type: integer
+        format: int32
+      default_view:
+        type: integer
+        format: int32
+      threshold:
+        type: integer
+        format: int32
+      order:
+        type: integer
+        format: int32
+      visible:
+        type: integer
+        format: int32
+      default_view_name:
+        type: string
+
+  Metric:
+    type: object
+    properties:
+      name:
+        type: string
+      suffix:
+        type: string
+      description:
+        type: string
+      default_value:
+        type: integer
+        format: int32
+      display_chart:
+        type: integer
+        format: int32
+
+  ListMetricPointsResponse:
+    type: object
+    properties:
+      meta:
+        $ref: '#/definitions/MetaData'
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/MetricPointsResponse'
+
+  SingleMetricPointResponse:
+    type: object
+    properties:
+      data:
+        $ref: '#/definitions/MetricPointsResponse'
+
+  MetricPointsResponse:
+    type: object
+    properties:
+      id:
+        type: integer
+        format: int32
+      metric_id:
+        type: integer
+        format: int32
+      value:
+        type: number
+      counter:
+        type: integer
+        format: int32
+      calculated_value:
+        type: number
+      created_at:
+        type: string
+        format: date-time
+      updated_at:
+        type: string
+        format: date-time
+
+  MetricPoint:
+    type: object
+    properties:
+      value:
+        type: number
+      timestamp:
+        type: string
+        format: date-time
+
+  Ping:
+    type: object
+    properties:
+      data:
+        type: string
+
+  MetaData:
+    type: object
+    properties:
+      pagination:
+        $ref: '#/definitions/Pagination'
+
+  Pagination:
+    type: object
+    properties:
+      total:
+        type: integer
+        format: int32
+      count:
+        type: integer
+        format: int32
+      per_page:
+        type: integer
+        format: int32
+      current_page:
+        type: integer
+        format: int32
+      total_pages:
+        type: integer
+        format: int32
+      links:
+        type: object
+        properties:
+          next_page:
+            type: string
+          previous_page:
+            type: string
+  Tag:
+    description: Key-value pairs of tags where the key is the slug and the value is the name.
+    type: object
+    additionalProperties: true
+
+  Version:
+    type: object
+    properties:
+      meta:
+        type: object
+        properties:
+          on_latest:
+            type: boolean
+          latest:
+            type: object
+            properties:
+              tag_name:
+                type: string
+              prelease:
+                type: boolean
+              draft:
+                type: boolean
+      data:
+        type: string
+
+  Error:
+    type: object
+    properties:
+      code:
+        type: integer
+        format: integer
+      message:
+        type: string
+      fields:
+        type: string
