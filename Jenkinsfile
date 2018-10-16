@@ -11,9 +11,8 @@ pipeline {
                 checkout([
                     $class: 'GitSCM',
                     branches: scm.branches,
-                    extensions: scm.extensions + [[$class: 'LocalBranch'], [$class: 'WipeWorkspace']],
-                    userRemoteConfigs: [[credentialsId: 'elx-bot-github-userpass', url: 'git@github.com:ElyxorCorp/cachethq-swagger.git']],
-                    doGenerateSubmoduleConfigurations: false
+                    extensions: scm.extensions + [[$class: 'CleanBeforeCheckout']],
+                    userRemoteConfigs: scm.userRemoteConfigs
                 ])
             }
         }
