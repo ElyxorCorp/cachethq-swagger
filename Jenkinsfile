@@ -1,48 +1,70 @@
-node {
-    def server
-    def buildInfo
-    def rtGradle
+def server = Artifactory.server "artifactory-elyxor"
+def buildInfo = Artifactory.newBuildInfo()
+def rtGradle = Artifactory.newGradleBuild()
 
-    stage ('Checkout') {
-        checkout([
-            $class: 'GitSCM',
-            branches: scm.branches,
-            extensions: scm.extensions + [[$class: 'LocalBranch'], [$class: 'WipeWorkspace']],
-            userRemoteConfigs: [[credentialsId: 'elx-bot', url: 'git@github.com:ElyxorCorp/cachethq-swagger.git']],
-            doGenerateSubmoduleConfigurations: false
-        ])
-    }
+pipeline {
+    agent any
 
-    stage ('Artifactory configuration') {
-        server = Artifactory.server "artifactory-elyxor"
-
-        rtGradle = Artifactory.newGradleBuild()
-        rtGradle.tool = 'gradle'
-        rtGradle.useWrapper = true
-        rtGradle.deployer repo: (env.BRANCH_NAME=='release' ? 'bins-release-local' : 'bins-snapshot-local'), server: server
-        rtGradle.resolver repo: (env.BRANCH_NAME=='release' ? 'libs-release' : 'libs-snapshot'), server: server
-        rtGradle.deployer.deployArtifacts = false // Disable artifacts deployment during Gradle run
-
-        buildInfo = Artifactory.newBuildInfo()
-    }
-
-    stage ('Test') {
-        rtGradle.run buildFile: 'build.gradle', tasks: 'clean test'
-    }
-
-    stage ('Deploy') {
-        if (!env.BRANCH_NAME.startsWith('PR-')) {
-            if (env.BRANCH_NAME == 'master') {
-                rtGradle.run buildFile: 'build.gradle', tasks: 'setReleaseVersion artifactoryPublish', buildInfo: buildInfo
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout([
+                    $class: 'GitSCM',
+                    branches: scm.branches,
+                    extensions: scm.extensions + [[$class: 'LocalBranch'], [$class: 'WipeWorkspace']],
+                    userRemoteConfigs: [[credentialsId: 'elx-bot', url: 'git@github.com:ElyxorCorp/cachethq-swagger.git']],
+                    doGenerateSubmoduleConfigurations: false
+                ])
             }
-            else {
-                rtGradle.run buildFile: 'build.gradle', tasks: 'artifactoryPublish', buildInfo: buildInfo
-            }
-            rtGradle.deployer.deployArtifacts buildInfo
         }
-    }
 
-    stage ('Publish build info') {
-        server.publishBuildInfo buildInfo
+        stage('Configure Aritfactory') {
+            steps {
+                script {
+                    rtGradle.useWrapper = true
+
+                    if(env.BRANCH_NAME == 'master') {
+                        rtGradle.deployer repo: 'bins-release-local', server: server
+                        rtGradle.resolver repo: 'bins-release', server: server
+                    }
+                    else {
+                        rtGradle.deployer repo: 'bins-snapshot-local', server: server
+                        rtGradle.resolver repo: 'bins-snapshot', server: server
+                    }
+                    rtGradle.deployer.deployArtifacts = false // Disable artifacts deployment during Gradle run
+                }
+            }
+        }
+
+        stage('Build') {
+            steps {
+                script {
+                    rtGradle.run buildFile: 'build.gradle', tasks: 'build'
+                }
+            }
+        }
+
+        stage('Deploy') {
+            steps {
+                script {
+                    if(env.BRANCH_NAME == 'master') {
+                        rtGradle.run buildFile: 'build.gradle', tasks: 'setReleaseVersion artifactoryPublish', buildInfo: buildInfo
+                    }
+                    else {
+                        rtGradle.run buildFile: 'build.gradle', tasks: 'artifactoryPublish', buildInfo: buildInfo
+                    }
+
+                    rtGradle.deployer.deployArtifacts buildInfo
+                }
+            }
+         }
+
+         stage('Publish build info') {
+            steps {
+                script {
+                    server.publishBuildInfo buildInfo
+                }
+            }
+         }
     }
 }
