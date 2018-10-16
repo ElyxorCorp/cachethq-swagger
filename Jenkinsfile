@@ -20,7 +20,7 @@ pipeline {
         stage('Configure Aritfactory') {
             steps {
                 script {
-                    // rtGradle.useWrapper = true
+                    rtGradle.useWrapper = true
 
                     if(env.BRANCH_NAME == 'master') {
                         rtGradle.deployer repo: 'bins-release-local', server: server
