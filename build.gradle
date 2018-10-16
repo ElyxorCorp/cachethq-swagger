@@ -101,6 +101,13 @@ ext {
     println 'Version: ' + project.version
 }
 
+task setReleaseVersion {
+    doFirst {
+        project.version = project.version.replaceAll('-SNAPSHOT', '')
+    }
+}
+
+
 publishing {
     publications {
         CachethqSwagger(MavenPublication) {
