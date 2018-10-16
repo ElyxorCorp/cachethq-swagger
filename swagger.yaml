@@ -279,7 +279,7 @@ paths:
         200:
           description: Get a component group
           schema:
-            $ref: '#/definition/SingleComponentGroupResponse'
+            $ref: '#/definitions/SingleComponentGroupResponse'
     put:
       operationId: updateComponentGroupById
       summary: Update a Component Group.
@@ -951,7 +951,7 @@ definitions:
         items:
           $ref: '#/definitions/IncidentUpdateResponse'
 
-  SingleIncidentUpdateResponsee:
+  SingleIncidentUpdateResponse:
     type: object
     properties:
       data:
