@@ -177,7 +177,7 @@ task generateApi {
             config.setAdditionalProperties([
                     'apiPackage'  : 'com.elyxor.cachethq.api',
                     'modelPackage': 'com.elyxor.cachethq.model',
-                    'sourceFolder': codegenSrcDir.toString()
+                    'sourceFolder': 'src/main/java'
             ])
             new DefaultGenerator().opts(config.toClientOptInput()).generate()
         }
