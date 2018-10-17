@@ -739,13 +739,10 @@ definitions:
         format: int32
       created_at:
         type: string
-        format: date-time
       updated_at:
         type: string
-        format: date-time
       deleted_at:
         type: string
-        format: date-time
       status_name:
         type: string
       tags:
@@ -798,10 +795,8 @@ definitions:
         type: string
       created_at:
         type: string
-        format: date-time
       updated_at:
         type: string
-        format: date-time
       order:
         type: integer
         format: int32
@@ -869,16 +864,12 @@ definitions:
         type: string
       scheduled_at:
         type: string
-        format: date-time
       created_at:
         type: string
-        format: date-time
       updated_at:
         type: string
-        format: date-time
       deleted_at:
         type: string
-        format: date-time
       human_status:
         type: string
 
@@ -906,7 +897,6 @@ definitions:
         format: boolean
       created_at:
         type: string
-        format: date-time
       template:
         type: string
       vars:
@@ -931,10 +921,8 @@ definitions:
         format: int32
       created_at:
         type: string
-        format: date-time
       updated_at:
         type: string
-        format: date-time
       human_status:
         type: string
       permalink:
@@ -995,10 +983,8 @@ definitions:
         type: boolean
       created_at:
         type: string
-        format: date-time
       updated_at:
         type: string
-        format: date-time
       places:
         type: integer
         format: int32
@@ -1067,10 +1053,8 @@ definitions:
         type: number
       created_at:
         type: string
-        format: date-time
       updated_at:
         type: string
-        format: date-time
 
   MetricPoint:
     type: object
@@ -1079,7 +1063,6 @@ definitions:
         type: number
       timestamp:
         type: string
-        format: date-time
 
   Ping:
     type: object
