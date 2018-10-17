@@ -16,10 +16,12 @@ hs_err_pid*
 target
 .gradle
 build
+build.sbt
 
 # swagger
 .swagger-codegen/
 docs/
+generated/
 
 # intellij
 .idea

@@ -23,12 +23,11 @@ pipeline {
                     rtGradle.useWrapper = true
 
                     if(env.BRANCH_NAME == 'master') {
-                        rtGradle.deployer repo: 'bins-release-local', server: server
-                        rtGradle.resolver repo: 'bins-release', server: server
-                    }
-                    else {
+                        rtGradle.deployer repo: 'libs-release-local', server: server
+                        rtGradle.resolver repo: 'libs-release', server: server
+                    } else {
                         rtGradle.deployer repo: 'bins-snapshot-local', server: server
-                        rtGradle.resolver repo: 'bins-snapshot', server: server
+                        rtGradle.resolver repo: 'libs-snapshot', server: server
                     }
                     rtGradle.deployer.deployArtifacts = false // Disable artifacts deployment during Gradle run
                 }
@@ -46,14 +45,16 @@ pipeline {
         stage('Deploy') {
             steps {
                 script {
-                    if(env.BRANCH_NAME == 'master') {
-                        rtGradle.run buildFile: 'build.gradle', tasks: 'setReleaseVersion artifactoryPublish', buildInfo: buildInfo
-                    }
-                    else {
-                        rtGradle.run buildFile: 'build.gradle', tasks: 'artifactoryPublish', buildInfo: buildInfo
-                    }
+                    if (!env.BRANCH_NAME.startsWith('PR-')) {
+                      if(env.BRANCH_NAME == 'master') {
+                          rtGradle.run buildFile: 'build.gradle', tasks: 'setReleaseVersion artifactoryPublish', buildInfo: buildInfo
+                      }
+                      else {
+                          rtGradle.run buildFile: 'build.gradle', tasks: 'artifactoryPublish', buildInfo: buildInfo
+                      }
 
-                    rtGradle.deployer.deployArtifacts buildInfo
+                      rtGradle.deployer.deployArtifacts buildInfo
+                    }
                 }
             }
          }

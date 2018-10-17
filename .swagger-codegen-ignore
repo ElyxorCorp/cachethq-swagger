@@ -26,3 +26,6 @@
 git_push.sh
 pom.xml
 src/**/*
+gradle/**/*
+gradlew
+gradlew.bat
