@@ -79,20 +79,18 @@ ext {
 
     def gitRepo = Grgit.open(dir: projectDir.toString())
     gitHash = gitRepo.head().id
-    gitBranch = gitRepo.branch.current.name
+    gitBranch = gitRepo.branch.current().name
     gitRepo.close()
 
     currentJvm = org.gradle.internal.jvm.Jvm.current()
 
-    ver = getVersionCode()
-
     if (gitBranch == 'master') {
         println 'Building master branch'
-        project.version = ver
+        project.version = getMasterVersion()
     } else {
         branchVersionIdentifier = gitBranch.replaceAll("[\\W]", "_")
         println 'Building branch: ' + branchVersionIdentifier
-        project.version = ver + '-wip.' + branchVersionIdentifier
+        project.version = getBranchVersion(branchVersionIdentifier)
     }
 
     println 'Version: ' + project.version
