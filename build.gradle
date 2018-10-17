@@ -1,0 +1,173 @@
+buildscript {
+    repositories {
+        mavenCentral()
+        jcenter()
+    }
+   dependencies {
+       classpath('io.swagger:swagger-codegen:2.2.3')
+       classpath('com.github.jengelman.gradle.plugins:shadow:2.0.2')
+   }
+}
+
+plugins {
+    id 'idea'
+    id 'java'
+    id 'maven'
+    id 'maven-publish'
+    id 'signing'
+    id 'org.ajoberstar.grgit' version '2.2.1'
+}
+
+import org.ajoberstar.grgit.Grgit
+
+apply from: 'versioning.gradle'
+
+group = applicationGroupId
+
+configurations {
+    all {
+        resolutionStrategy {
+            cacheDynamicVersionsFor 0, 'seconds'
+        }
+
+        exclude group: "org.slf4j", module: "slf4j-log4j12"
+        exclude group: "log4j", module: "log4j"
+        exclude group: "org.eclipse.jetty", module: "jetty-server"
+    }
+
+    swaggerCodegen
+}
+
+repositories {
+    mavenLocal()
+    mavenCentral()
+    maven { url "https://artifactory.elyxor.com/libs-release" }
+    jcenter()
+}
+
+dependencies {
+    swaggerCodegen 'io.swagger:swagger-codegen:2.2.3'
+
+    compile 'io.swagger:swagger-annotations:1.5.21'
+    compile 'com.squareup.okhttp:okhttp:2.7.5'
+    compile 'com.squareup.okhttp:logging-interceptor:2.7.5'
+    compile 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.9.3'
+    compile 'com.google.code.gson:gson:2.8.5'
+    compile 'joda-time:joda-time:2.10'
+
+    testCompile 'junit:junit:4.12'
+}
+
+sourceSets {
+    main {
+        java {
+            srcDirs = ['generated/src/main/java']
+        }
+        resources {
+            srcDirs = ['generated/src/main/resources']
+        }
+    }
+}
+
+compileJava {
+    options.encoding = 'UTF-8'
+    options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
+}
+
+ext {
+    startTime = new Date().format("yyy-MM-dd'T'HH:mm:ssZ")
+
+    def gitRepo = Grgit.open(dir: projectDir.toString())
+    gitHash = gitRepo.head().id
+    gitBranch = gitRepo.branch.current.name
+    gitRepo.close()
+
+    currentJvm = org.gradle.internal.jvm.Jvm.current()
+
+    ver = getVersionCode()
+
+    if (gitBranch == 'master') {
+        println 'Building master branch'
+        project.version = ver
+    } else {
+        branchVersionIdentifier = gitBranch.replaceAll("[\\W]", "_")
+        println 'Building branch: ' + branchVersionIdentifier
+        project.version = ver + '-wip.' + branchVersionIdentifier
+    }
+
+    println 'Version: ' + project.version
+}
+
+task setReleaseVersion {
+    doFirst {
+        project.version = project.version.replaceAll('-SNAPSHOT', '')
+    }
+}
+
+
+publishing {
+    publications {
+        CachethqSwagger(MavenPublication) {
+            artifact jar
+            version project.version
+            pom.withXml {
+                asNode().children().last() + {
+                    resolveStrategy = Closure.DELEGATE_FIRST
+                    name project.applicationTitle
+                    description project.applicationDescription
+                    url project.url
+                    scm {
+                        url project.url
+                        connection project.scmUrl
+                        developerConnection project.scmUrl
+                    }
+                    licenses {
+                        license {
+                            name project.licenseName
+                            url project.licenseUrl
+                            distribution 'repo'
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
+
+import io.swagger.codegen.config.CodegenConfigurator
+import io.swagger.codegen.DefaultGenerator
+
+def generatedFolder = 'generated'
+def swaggerSourceFolder = generatedFolder + '/src/main/java'
+
+task generateApi {
+    FileTree swaggerFiles = fileTree('.') {
+        include '*.yaml'
+    }
+
+    inputs.files(swaggerFiles)
+    outputs.dir("$projectDir/$generatedFolder")
+
+    doLast {
+        swaggerFiles.each { File file ->
+            println "Processing file: " + file
+            def config = new CodegenConfigurator()
+            config.setInputSpec(file.toString())
+            config.setOutputDir("$projectDir")
+            config.setLang('java')
+            config.setLibrary('okhttp-gson')
+            config.setAdditionalProperties([
+                    'apiPackage'  : 'com.elyxor.cachethq.api',
+                    'modelPackage': 'com.elyxor.cachethq.model',
+                    'sourceFolder': swaggerSourceFolder
+            ])
+            new DefaultGenerator().opts(config.toClientOptInput()).generate()
+        }
+    }
+}
+
+compileJava.dependsOn generateApi
+
+clean.doFirst {
+    delete("${projectDir}/$generatedFolder")
+}

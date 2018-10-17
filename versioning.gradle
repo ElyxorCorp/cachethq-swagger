@@ -1,0 +1,9 @@
+ext {
+  major = project.property('artifactMajorVersion')
+  minor = project.property('artifactMinorVersion')
+  patch = project.property('artifactPatchVersion')
+
+  getVersionCode = {
+    return major + '.' + minor + '.' + patch
+  }
+}
