@@ -12,7 +12,7 @@ securityDefinitions:
     description: HTTP Basic Authentication.
   apiKey:
     type: apiKey
-    name: Cachet-Token
+    name: X-Cachet-Token
     in: header
 security:
 - basicAuth: []
