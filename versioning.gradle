@@ -2,29 +2,8 @@ ext {
   major = project.property('artifactMajorVersion')
   minor = project.property('artifactMinorVersion')
   patch = project.property('artifactPatchVersion')
-  buildNum = 'LOCAL'
 
   getVersionCode = {
-    if (rootProject.hasProperty('teamcity')) {
-      teamcity['build.major'] = major
-      teamcity['build.minor'] = minor
-      teamcity['build.patch'] = patch
-  
-      if (teamcity['build.number'].contains('.')) {
-        buildNum = teamcity['build.number'].split('\\.')[2]
-      } else {
-        buildNum = teamcity['build.number']
-      }
-
-      print '##teamcity[buildNumber \'' + major + '.' + minor + '.' + patch + '-' + buildNum + '\']'
-    } else {
-      ext.env = System.getenv()
-      buildNum = env.BUILD_NUMBER?.toInteger()
-      if (buildNum) {
-        println '##jenkins[buildNumber \'' + major + '.' + minor + '.' + patch + '-' + buildNum + '\']'
-      }
-    }
-
-    return major + '.' + minor + '.' + patch + '-rc.' + buildNum
+    return major + '.' + minor + '.' + patch
   }
 }

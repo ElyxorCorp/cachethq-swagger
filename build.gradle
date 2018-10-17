@@ -86,16 +86,13 @@ ext {
 
     ver = getVersionCode()
 
-    if (gitBranch == 'release') {
-        println 'Building release branch'
-        project.version = ver.replaceAll('-rc.*', '')
-    } else if (gitBranch == 'master') {
+    if (gitBranch == 'master') {
         println 'Building master branch'
         project.version = ver
     } else {
         branchVersionIdentifier = gitBranch.replaceAll("[\\W]", "_")
         println 'Building branch: ' + branchVersionIdentifier
-        project.version = ver.replaceAll('-rc.*', '-wip.' + branchVersionIdentifier)
+        project.version = ver + '-wip.' + branchVersionIdentifier
     }
 
     println 'Version: ' + project.version
