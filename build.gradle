@@ -24,6 +24,10 @@ apply from: 'versioning.gradle'
 
 group = applicationGroupId
 
+def codegenOutputDir = "generated"
+def codegenSrcDir = codegenOutputDir + "/src/main/java"
+def codegenResourceDir = codegenOutputDir + "/src/main/resources"
+
 configurations {
     all {
         resolutionStrategy {
@@ -61,10 +65,10 @@ dependencies {
 sourceSets {
     main {
         java {
-            srcDirs = ['generated/src/main/java']
+            srcDirs = [ codegenSrcDir ]
         }
         resources {
-            srcDirs = ['generated/src/main/resources']
+            srcDirs = [ codegenResourceDir ]
         }
     }
 }
@@ -154,29 +158,26 @@ publishing {
 import io.swagger.codegen.config.CodegenConfigurator
 import io.swagger.codegen.DefaultGenerator
 
-def generatedFolder = 'generated'
-def swaggerSourceFolder = generatedFolder + '/src/main/java'
-
 task generateApi {
     FileTree swaggerFiles = fileTree('.') {
         include '*.yaml'
     }
 
     inputs.files(swaggerFiles)
-    outputs.dir("$projectDir/$generatedFolder")
+    outputs.dir(codegenOutputDir)
 
     doLast {
         swaggerFiles.each { File file ->
             println "Processing file: " + file
             def config = new CodegenConfigurator()
             config.setInputSpec(file.toString())
-            config.setOutputDir("$projectDir")
+            config.setOutputDir(codegenOutputDir)
             config.setLang('java')
             config.setLibrary('okhttp-gson')
             config.setAdditionalProperties([
                     'apiPackage'  : 'com.elyxor.cachethq.api',
                     'modelPackage': 'com.elyxor.cachethq.model',
-                    'sourceFolder': swaggerSourceFolder
+                    'sourceFolder': 'src/main/java'
             ])
             new DefaultGenerator().opts(config.toClientOptInput()).generate()
         }
@@ -186,5 +187,5 @@ task generateApi {
 compileJava.dependsOn generateApi
 
 clean.doFirst {
-    delete("${projectDir}/$generatedFolder")
+    delete(codegenOutputDir)
 }
