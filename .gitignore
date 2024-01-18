@@ -26,3 +26,5 @@ python-client/
 
 # intellij
 .idea
+
+.DS_Store
