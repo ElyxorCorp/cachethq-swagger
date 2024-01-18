@@ -4,15 +4,15 @@ buildscript {
         jcenter()
     }
    dependencies {
-       classpath('io.swagger:swagger-codegen:2.2.3')
+       classpath('io.swagger.codegen.v3:swagger-codegen:3.0.52')
        classpath('com.github.jengelman.gradle.plugins:shadow:2.0.2')
+       classpath('io.swagger.codegen.v3:swagger-codegen-generators:1.0.46')
    }
 }
 
 plugins {
     id 'idea'
     id 'java'
-    id 'maven'
     id 'maven-publish'
     id 'signing'
     id 'org.ajoberstar.grgit' version '2.2.1'
@@ -45,21 +45,23 @@ configurations {
 repositories {
     mavenLocal()
     mavenCentral()
-    maven { url "https://artifactory.elyxor.com/libs-release" }
+    maven { url "https://artifactory.elyxor.com/artifactory/libs-release-local" }
     jcenter()
 }
 
 dependencies {
-    swaggerCodegen 'io.swagger:swagger-codegen:2.2.3'
+    swaggerCodegen 'io.swagger.codegen.v3:swagger-codegen:3.0.52'
+    
+    implementation 'io.swagger.core.v3:swagger-annotations:2.2.20'
+    implementation 'com.squareup.okhttp:okhttp:2.7.5'
+    implementation 'com.squareup.okhttp:logging-interceptor:2.7.5'
+    implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.9.3'
+    implementation 'com.google.code.gson:gson:2.8.5'
+    implementation 'joda-time:joda-time:2.10'
+    implementation 'io.gsonfire:gson-fire:1.9.0'
+    implementation 'javax.annotation:javax.annotation-api:1.3.2'
 
-    compile 'io.swagger:swagger-annotations:1.5.21'
-    compile 'com.squareup.okhttp:okhttp:2.7.5'
-    compile 'com.squareup.okhttp:logging-interceptor:2.7.5'
-    compile 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310:2.9.3'
-    compile 'com.google.code.gson:gson:2.8.5'
-    compile 'joda-time:joda-time:2.10'
-
-    testCompile 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.12'
 }
 
 sourceSets {
@@ -153,10 +155,17 @@ publishing {
             }
         }
     }
+    repositories {
+        maven { url = 'https://artifactory.elyxor.com/artifactory/libs-release-local' }
+    }
 }
 
-import io.swagger.codegen.config.CodegenConfigurator
-import io.swagger.codegen.DefaultGenerator
+import io.swagger.codegen.v3.config.CodegenConfigurator
+import io.swagger.codegen.v3.DefaultGenerator
+import io.swagger.codegen.v3.CodegenConfigLoader
+import io.swagger.codegen.v3.ClientOptInput
+import io.swagger.codegen.v3.ClientOpts
+import io.swagger.v3.parser.OpenAPIV3Parser
 
 task generateApi {
     FileTree swaggerFiles = fileTree('.') {
@@ -164,22 +173,33 @@ task generateApi {
     }
 
     inputs.files(swaggerFiles)
-    outputs.dir(codegenOutputDir)
+    outputs.dir('generated/src/main/java/com/elyxor/cachethq/model')
+    outputs.dir('generated/src/main/java/com/elyxor/cachethq/api')
+    outputs.dir('generated/src/test/java/com/elyxor/cachethq/api')
+    outputs.dir('generated/gradle/wrapper')
 
     doLast {
         swaggerFiles.each { File file ->
-            println "Processing file: " + file
-            def config = new CodegenConfigurator()
-            config.setInputSpec(file.toString())
-            config.setOutputDir(codegenOutputDir)
-            config.setLang('java')
-            config.setLibrary('okhttp-gson')
-            config.setAdditionalProperties([
+            println "Processing file: " + file            
+            def codegenConfig = CodegenConfigLoader.forName('java')
+            codegenConfig.setOutputDir(codegenOutputDir)
+            codegenConfig.setLibrary('okhttp-gson')
+            def options = new ClientOpts()
+            options.setProperties([
+                    'dateLibrary': 'java8',
                     'apiPackage'  : 'com.elyxor.cachethq.api',
                     'modelPackage': 'com.elyxor.cachethq.model',
-                    'sourceFolder': 'src/main/java'
+                    'sourceFolder': 'src/main/java',
+                    'interfaceOnly': 'true'
             ])
-            new DefaultGenerator().opts(config.toClientOptInput()).generate()
+            def openAPI = new OpenAPIV3Parser().read(file.toString(), null, null)
+            def clientOpts = new ClientOptInput()
+            clientOpts.setOpenAPI(openAPI)
+            clientOpts.setConfig(codegenConfig)
+            clientOpts.setOpts(options)
+
+            new DefaultGenerator().opts(clientOpts).generate()
+
         }
     }
 }
