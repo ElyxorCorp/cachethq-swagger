@@ -45,7 +45,6 @@ configurations {
 repositories {
     mavenLocal()
     mavenCentral()
-    maven { url "https://artifactory.elyxor.com/artifactory/libs-release-local" }
     jcenter()
 }
 
@@ -156,7 +155,16 @@ publishing {
         }
     }
     repositories {
-        maven { url = 'https://artifactory.elyxor.com/artifactory/libs-release-local' }
+        maven { 
+            url = 'https://artifactory.elyxor.com/artifactory/libs-snapshot-local' 
+            credentials(HttpHeaderCredentials) {
+                name = "X-JFrog-Art-API"
+                value = System.getenv('TOKEN')
+            }
+            authentication {
+                header(HttpHeaderAuthentication)
+            }
+        }
     }
 }
 
@@ -166,6 +174,12 @@ import io.swagger.codegen.v3.CodegenConfigLoader
 import io.swagger.codegen.v3.ClientOptInput
 import io.swagger.codegen.v3.ClientOpts
 import io.swagger.v3.parser.OpenAPIV3Parser
+
+task copyPyProjectFile(type: Copy, dependsOn: classes) {
+    println "Copy pyproject.toml"
+    from "${rootProject.projectDir}/pyproject.toml"
+    into 'python-client'
+}
 
 task generateApi {
     FileTree swaggerFiles = fileTree('.') {
@@ -204,8 +218,42 @@ task generateApi {
     }
 }
 
+task generateApiPython {
+    FileTree swaggerFiles = fileTree('.') {
+        include '*.yaml'
+    }
+
+    inputs.files(swaggerFiles)
+    outputs.dir('python-client')
+    outputs.dir('python-client/cachethq_client')
+
+    doLast {
+        swaggerFiles.each { File file ->
+            println "Processing file: " + file            
+            def codegenConfig = CodegenConfigLoader.forName('python')
+            codegenConfig.setOutputDir('python-client')
+            def options = new ClientOpts()
+            options.setProperties([
+                    'packageName': 'cachethq_client',
+                    'interfaceOnly': 'true'
+            ])
+            def openAPI = new OpenAPIV3Parser().read(file.toString(), null, null)
+            def clientOpts = new ClientOptInput()
+            clientOpts.setOpenAPI(openAPI)
+            clientOpts.setConfig(codegenConfig)
+            clientOpts.setOpts(options)
+
+            new DefaultGenerator().opts(clientOpts).generate()
+
+        }
+    }
+}
+
 compileJava.dependsOn generateApi
+generateApi.finalizedBy generateApiPython
+generateApiPython.finalizedBy copyPyProjectFile
 
 clean.doFirst {
     delete(codegenOutputDir)
+    delete('python-client')
 }
