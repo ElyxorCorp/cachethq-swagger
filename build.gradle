@@ -158,7 +158,7 @@ publishing {
     }
     repositories {
         maven { 
-            url = System.getenv('URL') + '/' + artifactoryRepo
+            url = System.getenv('URL') + '/artifactory/' + artifactoryRepo
             credentials(HttpHeaderCredentials) {
                 name = "X-JFrog-Art-API"
                 value = System.getenv('TOKEN')
