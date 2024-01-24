@@ -34,3 +34,4 @@ jobs:
       env:
         USERNAME: ${{ github.actor }}
         TOKEN: ${{ secrets.ARTIFACTORY_TOKEN }}
+        URL: ${{ vars.ARTIFACTORY_URL }}

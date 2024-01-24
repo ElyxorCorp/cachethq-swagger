@@ -104,10 +104,12 @@ ext {
     if (gitBranch == 'master') {
         println 'Building master branch'
         project.version = getMasterVersion()
+        artifactoryRepo = 'libs-release-local'
     } else {
         branchVersionIdentifier = gitBranch.replaceAll("[\\W]", "_")
         println 'Building branch: ' + branchVersionIdentifier
         project.version = getBranchVersion(branchVersionIdentifier)
+        artifactoryRepo = 'libs-snapshot-local'
     }
 
     println 'Version: ' + project.version
@@ -156,7 +158,7 @@ publishing {
     }
     repositories {
         maven { 
-            url = 'https://artifactory.elyxor.com/artifactory/libs-snapshot-local' 
+            url = System.getenv('URL') + '/' + artifactoryRepo
             credentials(HttpHeaderCredentials) {
                 name = "X-JFrog-Art-API"
                 value = System.getenv('TOKEN')
