@@ -9,6 +9,7 @@ jobs:
     permissions:
       contents: read
       packages: write
+      id-token: write
 
     steps:
     - uses: actions/checkout@v3
@@ -32,3 +33,8 @@ jobs:
     - name: Build with Poetry
       working-directory: ./python-client
       run: poetry build
+    - name: Publish package distributions to TestPyPI
+      uses: pypa/gh-action-pypi-publish@release/v1
+      working-directory: ./python-client
+      with:
+        repository-url: https://test.pypi.org/legacy/  
