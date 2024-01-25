@@ -7,15 +7,15 @@ schemes:
 - https
 - http
 securityDefinitions:
-  basicAuth:
-    type: basic
-    description: HTTP Basic Authentication.
+  # basicAuth:
+  #   type: basic
+  #   description: HTTP Basic Authentication.
   apiKey:
     type: apiKey
     name: X-Cachet-Token
     in: header
 security:
-- basicAuth: []
+# - basicAuth: []
 - apiKey: []
 basePath: /api/v1
 produces:

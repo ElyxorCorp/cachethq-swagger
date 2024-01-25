@@ -16,6 +16,7 @@ plugins {
     id 'maven-publish'
     id 'signing'
     id 'org.ajoberstar.grgit' version '2.2.1'
+    id "org.openapi.generator" version "7.2.0"
 }
 
 import org.ajoberstar.grgit.Grgit
@@ -183,6 +184,13 @@ task copyPyProjectFile(type: Copy, dependsOn: classes) {
     into 'python-client'
 }
 
+openApiGenerate {
+    generatorName.set("python-pydantic-v1")
+    inputSpec.set("$rootDir/swagger.yaml")
+    outputDir.set("$rootDir/python-client")
+    packageName.set("cachethq_client")
+}
+
 task generateApi {
     FileTree swaggerFiles = fileTree('.') {
         include '*.yaml'
@@ -220,40 +228,9 @@ task generateApi {
     }
 }
 
-task generateApiPython {
-    FileTree swaggerFiles = fileTree('.') {
-        include '*.yaml'
-    }
-
-    inputs.files(swaggerFiles)
-    outputs.dir('python-client')
-    outputs.dir('python-client/cachethq_client')
-
-    doLast {
-        swaggerFiles.each { File file ->
-            println "Processing file: " + file            
-            def codegenConfig = CodegenConfigLoader.forName('python')
-            codegenConfig.setOutputDir('python-client')
-            def options = new ClientOpts()
-            options.setProperties([
-                    'packageName': 'cachethq_client',
-                    'interfaceOnly': 'true'
-            ])
-            def openAPI = new OpenAPIV3Parser().read(file.toString(), null, null)
-            def clientOpts = new ClientOptInput()
-            clientOpts.setOpenAPI(openAPI)
-            clientOpts.setConfig(codegenConfig)
-            clientOpts.setOpts(options)
-
-            new DefaultGenerator().opts(clientOpts).generate()
-
-        }
-    }
-}
-
 compileJava.dependsOn generateApi
-generateApi.finalizedBy generateApiPython
-generateApiPython.finalizedBy copyPyProjectFile
+generateApi.finalizedBy tasks.openApiGenerate
+tasks.openApiGenerate.finalizedBy copyPyProjectFile
 
 clean.doFirst {
     delete(codegenOutputDir)

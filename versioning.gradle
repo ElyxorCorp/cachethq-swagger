@@ -30,6 +30,6 @@ ext {
   }
 
   getBranchVersion = { branchName ->
-    return major + '.' + minor + '.' + patch + '-SNAPSHOT'
+    return major + '.' + minor + '.' + patch + '-' + branchName + '-SNAPSHOT'
   }
 }
