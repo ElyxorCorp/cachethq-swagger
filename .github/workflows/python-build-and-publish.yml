@@ -34,7 +34,6 @@ jobs:
       working-directory: ./python-client
       run: poetry build
     - name: Publish package distributions to TestPyPI
-      working-directory: ./python-client
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         repository-url: https://test.pypi.org/legacy/  
