@@ -1,0 +1,20 @@
+name: Test Pypi Publish
+
+on:
+  workflow_run:
+    workflows: [generate-python-client]
+    branches: [dev]
+    types: [completed]
+
+jobs:
+  publish: 
+    name: Publish to Test Pypi
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Publish package distributions to TestPyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          repository-url: https://test.pypi.org/legacy/  
+          packages-dir: python-client/dist/
+    

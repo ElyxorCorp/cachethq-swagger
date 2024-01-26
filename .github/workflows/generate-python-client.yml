@@ -1,4 +1,4 @@
-name: Python Build and Publish
+name: generate-python-client
 
 on: [push]
 
@@ -31,10 +31,6 @@ jobs:
       with:
         arguments: build
     - name: Build with Poetry
-      working-directory: ./python-client
+      working-directory: ./python-client 
       run: poetry build
-    - name: Publish package distributions to TestPyPI
-      uses: pypa/gh-action-pypi-publish@release/v1
-      with:
-        repository-url: https://test.pypi.org/legacy/  
-        packages-dir: python-client/dist/
+      
