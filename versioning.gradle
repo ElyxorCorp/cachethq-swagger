@@ -4,7 +4,7 @@ ext {
   patch = project.property('artifactPatchVersion')
   buildNum = 'LOCAL'
 
-  getMasterVersion = {
+  getReleaseVersion = {
     if (rootProject.hasProperty('teamcity')) {
       teamcity['build.major'] = major
       teamcity['build.minor'] = minor
@@ -29,7 +29,7 @@ ext {
     return major + '.' + minor + '.' + buildNum
   }
 
-  getBranchVersion = { branchName ->
-    return major + '.' + minor + '.' + patch + '-' + branchName + '-SNAPSHOT'
+  getDevVersion = { branchName ->
+    return major + '.' + minor + '.' + patch + '-SNAPSHOT'
   }
 }

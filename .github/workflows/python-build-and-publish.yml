@@ -38,4 +38,9 @@ jobs:
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         repository-url: https://test.pypi.org/legacy/  
-        packages-dir: python-client/dist/      
+        packages-dir: python-client/dist/ 
+    - name: Publish release package to PyPI
+      if: startsWith(github.ref, 'ref/heads/release')
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        packages-dir: python-client/dist/         
