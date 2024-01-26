@@ -33,4 +33,9 @@ jobs:
     - name: Build with Poetry
       working-directory: ./python-client 
       run: poetry build
-      
+    - name: Publish package distributions to TestPyPI
+      if: github.ref == 'refs/heads/dev'
+      uses: pypa/gh-action-pypi-publish@release/v1
+      with:
+        repository-url: https://test.pypi.org/legacy/  
+        packages-dir: python-client/dist/      
