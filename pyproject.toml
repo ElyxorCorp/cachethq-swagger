@@ -5,6 +5,11 @@ description = ""
 authors = ["cbrand <chris.brandom@elyxor.com>"]
 readme = "README.md"
 license = "BSD-3-Clause"
+include = [
+    { path = "test", format = "sdist" },
+    { path = "docs", format = "sdist" },
+    { path = "setup.py", format = "sdist" },
+]
 
 [tool.poetry.dependencies]
 python = "^3.11"
