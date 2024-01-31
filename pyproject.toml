@@ -1,11 +1,11 @@
 [tool.poetry]
 name = "cachethq_client"
-version = "0.1.7"
+version = "0.1.8"
 description = ""
 authors = ["cbrand <chris.brandom@elyxor.com>"]
 readme = "PYPI-README.md"
 repository = "https://github.com/ElyxorCorp/cachethq-swagger"
-documentation = "https://github.com/ElyxorCorp/cachethq-swagger/tree/master/api-doc/README.md"
+documentation = "https://github.com/ElyxorCorp/cachethq-swagger/tree/dev/api-doc/README.md"
 license = "BSD-3-Clause"
 include = [
     { path = "test", format = "sdist" },
