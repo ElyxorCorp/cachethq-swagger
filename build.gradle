@@ -179,9 +179,12 @@ import io.swagger.codegen.v3.ClientOpts
 import io.swagger.v3.parser.OpenAPIV3Parser
 
 task copyPyProjectFile(type: Copy, dependsOn: classes) {
-    println "Copy pyproject.toml"
-    from "${rootProject.projectDir}/pyproject.toml"
-    into 'python-client'
+    into rootProject.projectDir
+    
+    into('python-client') {
+        from "${rootProject.projectDir}/pyproject.toml"
+        from "${rootProject.projectDir}/PYPI-README.md"
+    }
 }
 
 openApiGenerate {
