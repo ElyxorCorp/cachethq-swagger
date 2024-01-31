@@ -20,7 +20,6 @@ build.sbt
 
 # swagger
 .swagger-codegen/
-docs/
 generated/
 python-client/
 
