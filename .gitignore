@@ -21,9 +21,11 @@ build.sbt
 # swagger
 .swagger-codegen/
 generated/
+generated-python/
 python-client/
 
 # intellij
 .idea
+poetry.lock
 
 .DS_Store
