@@ -233,7 +233,7 @@ task generateApi {
 
 compileJava.dependsOn generateApi
 generateApi.finalizedBy tasks.openApiGenerate
-tasks.openApiGenerate.finalizedBy copyPyProjectFile
+//tasks.openApiGenerate.finalizedBy copyPyProjectFile
 
 clean.doFirst {
     delete(codegenOutputDir)
