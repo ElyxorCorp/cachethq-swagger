@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "cachethq_client"
-version = "0.1.8"
+version = "0.1.9"
 description = ""
 authors = ["cbrand <chris.brandom@elyxor.com>"]
 readme = "PYPI-README.md"
@@ -14,7 +14,7 @@ include = [
 ]
 
 [tool.poetry.dependencies]
-python = "^3.11"
+python = ">=3.7"
 certifi = "^2023.11.17"
 six = "^1.16.0"
 python-dateutil = "^2.8.2"
