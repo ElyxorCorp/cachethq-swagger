@@ -29,18 +29,21 @@ jobs:
     - name: Build with Gradle
       uses: gradle/gradle-build-action@bd5760595778326ba7f1441bcf7e88b49de61a25 # v2.6.0
       with:
-        arguments: build
+        arguments: generatePythonClient
     - name: Build with Poetry
-      working-directory: ./python-client 
+      working-directory: ./generated-python
       run: poetry build
+    - name: Run Unit Tests
+      working-directory: ./generated-python
+      run: poetry install --with dev && poetry run pytest test/
     - name: Publish package distributions to TestPyPI
       if: github.ref == 'refs/heads/dev'
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         repository-url: https://test.pypi.org/legacy/  
-        packages-dir: python-client/dist/ 
+        packages-dir: generated-python/dist/
     - name: Publish release package to PyPI
       if: startsWith(github.ref, 'ref/heads/release')
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
-        packages-dir: python-client/dist/         
+        packages-dir: generated-python/dist/
