@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "cachethq_client"
-version = "1.0.2"
+version = "1.0.3"
 description = "A python client library for connection to a CachetHQ Server"
 authors = ["elyxor <info@elyxor.com>"]
 readme = "PYPI-README.md"
