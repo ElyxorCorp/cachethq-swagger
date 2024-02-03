@@ -35,7 +35,7 @@ jobs:
       run: poetry build
     - name: Run Unit Tests
       working-directory: ./generated-python
-      run: poetry run pytest test/
+      run: poetry install --with dev && poetry run pytest test/
     - name: Publish package distributions to TestPyPI
       if: github.ref == 'refs/heads/dev'
       uses: pypa/gh-action-pypi-publish@release/v1
