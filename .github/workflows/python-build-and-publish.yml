@@ -43,7 +43,7 @@ jobs:
         repository-url: https://test.pypi.org/legacy/  
         packages-dir: generated-python/dist/
     - name: Publish release package to PyPI
-      if: startsWith(github.ref, 'ref/heads/release')
+      if: startsWith(github.ref, 'refs/heads/release')
       uses: pypa/gh-action-pypi-publish@release/v1
       with:
         packages-dir: generated-python/dist/
