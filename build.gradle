@@ -2,16 +2,16 @@ buildscript {
     repositories {
         mavenCentral()
     }
-   dependencies {
-       classpath('io.swagger.codegen.v3:swagger-codegen:3.0.52')
-       classpath('com.github.jengelman.gradle.plugins:shadow:2.0.2')
-       classpath('io.swagger.codegen.v3:swagger-codegen-generators:1.0.46')
-   }
+    dependencies {
+        classpath('io.swagger.codegen.v3:swagger-codegen:3.0.52')
+        classpath('com.github.jengelman.gradle.plugins:shadow:2.0.2')
+        classpath('io.swagger.codegen.v3:swagger-codegen-generators:1.0.46')
+    }
 }
 
 plugins {
     id 'idea'
-    id 'java'
+    id 'java-library'
     id 'maven-publish'
     id 'signing'
     id 'org.ajoberstar.grgit' version '2.2.1'
@@ -49,7 +49,7 @@ repositories {
 
 dependencies {
     swaggerCodegen 'io.swagger.codegen.v3:swagger-codegen:3.0.52'
-    
+
     implementation 'io.swagger.core.v3:swagger-annotations:2.2.20'
     implementation 'com.squareup.okhttp:okhttp:2.7.5'
     implementation 'com.squareup.okhttp:logging-interceptor:2.7.5'
@@ -62,23 +62,50 @@ dependencies {
     testImplementation 'junit:junit:4.13.1'
 }
 
+ext {
+    startTime = new Date().format("yyy-MM-dd'T'HH:mm:ssZ")
+
+    def gitRepo = Grgit.open(dir: projectDir.toString())
+    def gitHash = gitRepo.head().id
+    def gitBranch = gitRepo.branch.current().name
+    def gitBranchFullName = gitRepo.branch.current().fullName
+    gitRepo.close()
+
+    currentJvm = Jvm.current()
+
+    if (gitBranch.startsWith('refs/heads/release')) {  // also set in
+        project.version = getReleaseVersion()
+        println 'Building release: ' + project.version
+        artifactoryRepo = 'libs-snapshot-local'
+    } else if (gitBranch == 'dev') {
+        println 'Building dev branch'
+        project.version = getDevVersion(null)
+        artifactoryRepo = 'libs-snapshot-local'
+    } else {
+        def branchVersionIdentifier = gitBranch.replaceAll("\\W", "_")
+        println 'Building branch: ' + branchVersionIdentifier
+        project.version = getDevVersion(branchVersionIdentifier)
+        artifactoryRepo = 'libs-snapshot-local'
+    }
+
+    println 'Branch Ref: ' + gitBranchFullName + ' (' + gitHash + ')'
+    println 'Version: ' + project.version
+}
+
 sourceSets {
     main {
         java {
-            srcDirs = [ codegenJavaSrcDir ]
+            srcDirs = [codegenJavaSrcDir]
         }
         resources {
-            srcDirs = [ codegenJavaResourceDir ]
+            srcDirs = [codegenJavaResourceDir]
         }
     }
 }
 
-task sourceJar(type: Jar, dependsOn: classes) {
-    from sourceSets.main.allSource
-}
-
-task javadocJar(type: Jar, dependsOn: javadoc) {
-    from javadoc.destinationDir
+java {
+    withJavadocJar()
+    withSourcesJar()
 }
 
 compileJava {
@@ -86,48 +113,23 @@ compileJava {
     options.compilerArgs << "-Xlint:unchecked" << "-Xlint:deprecation"
 }
 
-ext {
-    startTime = new Date().format("yyy-MM-dd'T'HH:mm:ssZ")
-
-    def gitRepo = Grgit.open(dir: projectDir.toString())
-    gitHash = gitRepo.head().id
-    gitBranch = gitRepo.branch.current().name
-    gitRepo.close()
-
-    currentJvm = Jvm.current()
-
-    if (gitBranch == 'dev') {
-        println 'Building master branch'
-        project.version = getDevVersion()
-        artifactoryRepo = 'libs-snapshot-local'
-    } else {
-        def branchVersionIdentifier = gitBranch.replaceAll("[\\W]", "_")
-        println 'Building branch: ' + branchVersionIdentifier
-        project.version = getReleaseVersion(branchVersionIdentifier)
-        artifactoryRepo = 'libs-release-local'
-    }
-
-    println 'Version: ' + project.version
-}
-
-task setReleaseVersion {
-    doFirst {
-        project.version = project.version.replaceAll('-SNAPSHOT', '')
+jar {
+    manifest {
+        attributes(
+                'Implementation-Title': project.applicationTitle,
+                'Implementation-Version': project.version
+        )
     }
 }
 
-artifacts {
-    archives jar
-    archives sourceJar
-    archives javadocJar
+tasks.named("sourcesJar") {
+    mustRunAfter(":generateJavaClient")
 }
 
 publishing {
     publications {
-        CachethqSwagger(MavenPublication) {
-            artifact jar
-            artifact sourceJar
-            artifact javadocJar
+        mavenJava(MavenPublication) {
+            from components.java
             version project.version
             pom.withXml {
                 asNode().children().last() + {
@@ -152,7 +154,7 @@ publishing {
         }
     }
     repositories {
-        maven { 
+        maven {
             url = System.getenv('URL') + '/artifactory/' + artifactoryRepo
             credentials(HttpHeaderCredentials) {
                 name = "X-JFrog-Art-API"
@@ -172,7 +174,7 @@ import io.swagger.codegen.v3.ClientOpts
 import io.swagger.v3.parser.OpenAPIV3Parser
 import org.gradle.internal.jvm.Jvm
 
-task generateJavaClient {
+tasks.register('generateJavaClient') {
     FileTree swaggerFiles = fileTree('.') {
         include 'swagger.yaml'
     }
@@ -188,10 +190,10 @@ task generateJavaClient {
             codegenConfig.setLibrary('okhttp-gson')
             def options = new ClientOpts()
             options.setProperties([
-                    'dateLibrary': 'java8',
-                    'apiPackage'  : 'com.elyxor.cachethq.api',
-                    'modelPackage': 'com.elyxor.cachethq.model',
-                    'sourceFolder': 'src/main/java',
+                    'dateLibrary'  : 'java8',
+                    'apiPackage'   : 'com.elyxor.cachethq.api',
+                    'modelPackage' : 'com.elyxor.cachethq.model',
+                    'sourceFolder' : 'src/main/java',
                     'interfaceOnly': 'true'
             ])
             def openAPI = new OpenAPIV3Parser().read(file.toString(), null, null)
@@ -206,7 +208,7 @@ task generateJavaClient {
     }
 }
 
-task generatePythonClient {
+tasks.register('generatePythonClient') {
     FileTree swaggerFiles = fileTree('.') {
         include 'swagger.yaml'
     }
@@ -236,7 +238,7 @@ task generatePythonClient {
     }
 }
 
-task copyPyProjectFile(type: Copy) {
+tasks.register('copyPyProjectFile', Copy) {
     from "${rootProject.projectDir}/pyproject.toml"
     from "${rootProject.projectDir}/PYPI-README.md"
     into(codegenPythonDir)
