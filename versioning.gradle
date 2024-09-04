@@ -1,13 +1,16 @@
 ext {
-  major = project.property('artifactMajorVersion')
-  minor = project.property('artifactMinorVersion')
-  patch = project.property('artifactPatchVersion')
+    major = project.property('artifactMajorVersion')
+    minor = project.property('artifactMinorVersion')
+    patch = project.property('artifactPatchVersion')
 
-  getReleaseVersion = {
-    return major + '.' + minor + '.' + patch
-  }
+    getReleaseVersion = {
+        return major + '.' + minor + '.' + patch
+    }
 
-  getDevVersion = { branchName ->
-    return major + '.' + minor + '.' + patch + '-SNAPSHOT'
-  }
+    getDevVersion = { branchName ->
+        if (branchName) {
+            return major + '.' + minor + '.' + patch + "-" + branchName
+        }
+        return major + '.' + minor + '.' + patch + '-SNAPSHOT'
+    }
 }
