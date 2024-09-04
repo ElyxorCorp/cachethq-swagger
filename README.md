@@ -11,3 +11,4 @@ To use the java client library, clone the repo, run `./gradlew build`, go into t
 
 ## Python
 - publish location: [PyPI](https://pypi.org/project/cachethq-client/) 
+- generated API docs: https://github.com/ElyxorCorp/cachethq-swagger/blob/dev/api-doc/README.md
