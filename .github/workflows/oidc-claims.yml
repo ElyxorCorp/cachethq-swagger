@@ -1,0 +1,32 @@
+# THROWAWAY (EBP-1018 AC 1). Do not merge.
+# Prints the decoded claims of a GitHub OIDC token requested for AWS, so the
+# CodeArtifact role's trust conditions can be written against real values.
+# Prints only iss, aud, sub and job_workflow_ref, never the token itself.
+name: oidc-claims
+
+on:
+  push:
+    branches: [test/EBP-1018-oidc-claims]
+
+jobs:
+  claims:
+    runs-on: ubuntu-latest
+    environment: codeartifact-snapshots
+    permissions:
+      contents: read
+      id-token: write
+    steps:
+    - name: Print decoded OIDC claims
+      run: |
+        python3 - <<'PY'
+        import base64, json, os, urllib.request
+        req = urllib.request.Request(
+            os.environ["ACTIONS_ID_TOKEN_REQUEST_URL"] + "&audience=sts.amazonaws.com",
+            headers={"Authorization": "Bearer " + os.environ["ACTIONS_ID_TOKEN_REQUEST_TOKEN"]},
+        )
+        token = json.load(urllib.request.urlopen(req))["value"]
+        payload = token.split(".")[1]
+        payload += "=" * (-len(payload) % 4)
+        claims = json.loads(base64.urlsafe_b64decode(payload))
+        print(json.dumps({k: claims.get(k) for k in ["iss", "aud", "sub", "job_workflow_ref"]}, indent=1))
+        PY
