@@ -241,6 +241,7 @@ tasks.register('generatePythonClient') {
 tasks.register('copyPyProjectFile', Copy) {
     from "${rootProject.projectDir}/pyproject.toml"
     from "${rootProject.projectDir}/PYPI-README.md"
+    from "${rootProject.projectDir}/poetry.lock"
     into(codegenPythonDir)
 }
 

@@ -12,24 +12,33 @@ jobs:
       id-token: write
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
     - name: Set up JDK 17
-      uses: actions/setup-java@v3
+      uses: actions/setup-java@d1374f8ac74474200d16ef8ecee22c7ae7a51880 # v6.3.0
       with:
         java-version: '17'
         distribution: 'temurin'
         server-id: github # Value of the distributionManagement/repository/id field of the pom.xml
         settings-path: ${{ github.workspace }} # location for the settings.xml file
     - name: Set up Python
-      uses: actions/setup-python@v3
+      uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0 # v7.1.0
       with:
         python-version: '3.x'
     - name: Install Poetry
-      uses: snok/install-poetry@v1
-    - name: Build with Gradle
-      uses: gradle/gradle-build-action@bd5760595778326ba7f1441bcf7e88b49de61a25 # v2.6.0
+      uses: snok/install-poetry@a783c322200f0519c7926aa6faa857c4e23e9263 # v1.4.2
       with:
-        arguments: generatePythonClient
+        version: 2.5.2
+    - name: Show Poetry version
+      run: poetry --version
+    - name: Set up Gradle
+      uses: gradle/actions/setup-gradle@8da46b539cd8fe6ab27ca75128919a18d757604c # v6.4.1
+    - name: Generate Python client
+      run: ./gradlew generatePythonClient
+    # Fail fast if pyproject.toml changed without regenerating poetry.lock,
+    # so every install below resolves only from the committed lock.
+    - name: Verify poetry.lock matches pyproject.toml
+      working-directory: ./generated-python
+      run: poetry check --lock
     - name: Build with Poetry
       working-directory: ./generated-python
       run: poetry build
@@ -38,12 +47,12 @@ jobs:
       run: poetry install --with dev && poetry run pytest test/
     - name: Publish package distributions to TestPyPI
       if: github.ref == 'refs/heads/dev'
-      uses: pypa/gh-action-pypi-publish@release/v1
+      uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # v1.14.3
       with:
-        repository-url: https://test.pypi.org/legacy/  
+        repository-url: https://test.pypi.org/legacy/
         packages-dir: generated-python/dist/
     - name: Publish release package to PyPI
       if: startsWith(github.ref, 'refs/heads/release')
-      uses: pypa/gh-action-pypi-publish@release/v1
+      uses: pypa/gh-action-pypi-publish@7245906fb61fa33a13554f9d5fb856fe61758086 # v1.14.3
       with:
         packages-dir: generated-python/dist/
